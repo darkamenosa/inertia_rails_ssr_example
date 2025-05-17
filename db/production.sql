@@ -1,0 +1,3 @@
+CREATE DATABASE inertia_rails_example_production_cache;
+CREATE DATABASE inertia_rails_example_production_queue;
+CREATE DATABASE inertia_rails_example_production_cable;

@@ -1,0 +1,73 @@
+service: inertia_rails_example #Adjust this
+
+image: tuyenhx/inertia_rails_example #Adjust this
+
+# Deploy to these servers.
+servers:
+  web:
+    - 91.99.119.221
+  # job:
+  #   hosts:
+  #     - 91.99.119.221
+  #   cmd: bin/jobs
+  vite:
+    hosts:
+      - 91.99.119.221
+    cmd: bin/vite ssr
+    options:
+      network-alias: vite_ssr
+
+proxy:
+  ssl: true
+  host: inersample.ninzap.com #Adjust to your domain
+
+# Credentials for your image host.
+registry:
+  username: tuyenhx #Adjust this
+
+  # Always use an access token rather than real password when possible.
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  secret:
+    - RAILS_MASTER_KEY
+    - POSTGRES_PASSWORD
+  clear:
+    SOLID_QUEUE_IN_PUMA: true
+    DB_HOST: inertia_rails_example-db
+    INERTIA_SSR_URL: http://vite_ssr:13714
+
+aliases:
+  console: app exec --interactive --reuse "bin/rails console"
+  shell: app exec --interactive --reuse "bash"
+  logs: app logs -f
+  dbc: app exec --interactive --reuse "bin/rails dbconsole"
+
+volumes:
+  - "inertia_rails_storage:/rails/storage"
+
+asset_path: /rails/public/assets
+
+# Configure the image builder.
+builder:
+  arch:
+    - amd64
+    - arm64
+# Use accessory services (secrets come from .kamal/secrets).
+accessories:
+  db:
+    image: postgres:16
+    host: 91.99.119.221
+    port: "127.0.0.1:5432:5432" # Default PostgreSQL port (internal container port)
+    env:
+      clear:
+        POSTGRES_USER: inertia_rails_example
+        POSTGRES_DB: inertia_rails_example_production
+      secret:
+        - POSTGRES_PASSWORD
+    files:
+      - db/production.sql:/docker-entrypoint-initdb.d/setup.sql
+
+    directories:
+      - data:/var/lib/postgresql/data
